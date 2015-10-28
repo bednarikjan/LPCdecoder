@@ -1,0 +1,42 @@
+#!/usr/local/bin/python2.7
+
+#
+# Projekt: LPC dekoder do predmetu ZRE 2015
+# Autori: Jan Bednarik, Vaclav Stransky, Jana Vyroubalova
+#
+
+# Making a script get other sources either from current dir or src/ subdir
+import os
+import sys
+dir = os.getcwd()
+sys.path.insert(0, os.path.join(dir, 'src'))
+
+import random
+from file_parser import *
+from synthesize import *
+from wav_writer import *
+
+FILTER_ORDER=10
+FRAME_LENGTH=160
+
+if len(sys.argv) < 5:
+    print("Chybny pocet parametru!")
+else:
+    #print("Pocitam pocitam")
+
+    # zakladni vyparsovani ze souboru do vhodneho datoveho typu
+    lpcBook = getLPCBook(sys.argv[1])
+    gainBook = getGainBook(sys.argv[2])
+    (lpcCoeff, gains, lags) = getCod(sys.argv[3])
+    
+    # ziskani LPC koeficientu podle zakodovane nahravky
+    A = getLPCmatrix(lpcBook, lpcCoeff)
+
+    # ziskani vektoru gainu podle zakodovane nahravky
+    G = getGainVector(gainBook, gains)
+
+    # Synteza
+    synSamples = synthesize(A, G, lags, FILTER_ORDER, FRAME_LENGTH)
+
+    # zapise wav soubor se syntetizovanymi daty
+    writeWav(sys.argv[4], synSamples)
